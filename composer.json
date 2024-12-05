@@ -1,0 +1,25 @@
+{
+    "name": "gurucomkz/symfony-campaingmonitor",
+    "description": "CampaignMonitor adapter for symfony/mailer",
+    "license": "BSD-3-Clause",
+    "keywords": [
+        "silverstripe",
+        "tag",
+        "field"
+    ],
+    "authors": [
+        {
+            "name": "Sergey Shevchenko",
+            "homepage": "http://github.com/gurucomkz"
+        }
+    ],
+    "require": {
+        "campaignmonitor/createsend-php": "^7.1",
+        "symfony/mailer": "^7.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Gurucomkz\\SymfonyCampaignMonitor\\": "src/"
+        }
+    }
+}
