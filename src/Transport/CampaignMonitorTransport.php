@@ -2,6 +2,8 @@
 namespace Gurucomkz\SymfonyCampaignMonitor\Transport;
 
 use CS_REST_Transactional_ClassicEmail;
+use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
 use Symfony\Component\Mailer\Envelope;
@@ -17,7 +19,9 @@ class CampaignMonitorTransport extends AbstractTransport
     public function __construct(
         private string $clientId,
         private string $apiKey,
-        private string $domain = 'api.createsend.com'
+        private string $domain = 'api.createsend.com',
+        ?EventDispatcherInterface $dispatcher = null,
+        ?LoggerInterface $logger = null
     ) {
         $this->client = new CS_REST_Transactional_ClassicEmail(
             $this->apiKey,
@@ -26,7 +30,7 @@ class CampaignMonitorTransport extends AbstractTransport
             CS_REST_LOG_NONE,
             $this->domain
         );
-        parent::__construct();
+        parent::__construct($dispatcher, $logger);
     }
 
     protected function doSend(SentMessage $message): void
