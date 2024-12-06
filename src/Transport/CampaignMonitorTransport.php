@@ -35,7 +35,7 @@ class CampaignMonitorTransport extends AbstractTransport
         if (!($original instanceof Message)) {
             throw new RuntimeException('The CampaignMonitorTransport only supports instances of ' . Message::class . ' as the message being sent.');
         }
-        
+
         try {
             $email = MessageConverter::toEmail($original);
         } catch (\Exception $e) {
@@ -44,7 +44,12 @@ class CampaignMonitorTransport extends AbstractTransport
 
         $payload = $this->getPayload($email, $message->getEnvelope());
 
+        // createsend hadn't upgraded the connector to the latest php
+        // so we need to suppress the error here
+        $old_error_reporting = error_reporting();
+        error_reporting($old_error_reporting & ~E_DEPRECATED);
         $result = $this->client->send($payload, null, 'No');
+        error_reporting($old_error_reporting);
 
         if (!$result->was_successful()) {
             throw new \Exception('Failed to send email');
@@ -63,7 +68,6 @@ class CampaignMonitorTransport extends AbstractTransport
             'Text' => $email->getTextBody(),
             'Subject' => $email->getSubject(),
             'From' => $envelope->getSender()->getAddress(),
-            'ReplyTo' => $email->getReplyTo()[0]->getAddress(),
         ];
 
         $replyTo = $email->getReplyTo();
