@@ -15,7 +15,7 @@
     ],
     "require": {
         "campaignmonitor/createsend-php": "^7.1",
-        "symfony/mailer": "^7.2"
+        "symfony/mailer": "^6.0 || ^7.0"
     },
     "autoload": {
         "psr-4": {
