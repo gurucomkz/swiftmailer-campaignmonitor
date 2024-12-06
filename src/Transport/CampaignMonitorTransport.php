@@ -7,6 +7,7 @@ use Symfony\Component\Mailer\Transport\AbstractTransport;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\SentMessage;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Mime\Message;
 use Symfony\Component\Mime\MessageConverter;
 
 class CampaignMonitorTransport extends AbstractTransport
@@ -14,33 +15,38 @@ class CampaignMonitorTransport extends AbstractTransport
     private $client;
 
     public function __construct(
-        private string $clientId, 
-        private string $apiKey, 
+        private string $clientId,
+        private string $apiKey,
         private string $domain = 'api.createsend.com'
     ) {
         $this->client = new CS_REST_Transactional_ClassicEmail(
-            $apiKey, 
-            $clientId,
+            $this->apiKey,
+            $this->clientId,
             'https',
             CS_REST_LOG_NONE,
-            $domain
+            $this->domain
         );
         parent::__construct();
     }
 
     protected function doSend(SentMessage $message): void
     {
+        $original = $message->getOriginalMessage();
+        if (!($original instanceof Message)) {
+            throw new RuntimeException('The CampaignMonitorTransport only supports instances of ' . Message::class . ' as the message being sent.');
+        }
+        
         try {
-            $email = MessageConverter::toEmail($message->getOriginalMessage());
+            $email = MessageConverter::toEmail($original);
         } catch (\Exception $e) {
-            throw new RuntimeException(\sprintf('Unable to send message with the "%s" transport: ', __CLASS__).$e->getMessage(), 0, $e);
+            throw new RuntimeException(\sprintf('Unable to send message with the "%s" transport: ', __CLASS__) . $e->getMessage(), 0, $e);
         }
 
         $payload = $this->getPayload($email, $message->getEnvelope());
 
         $result = $this->client->send($payload, null, 'No');
 
-        if(!$result->was_successful()) {
+        if (!$result->was_successful()) {
             throw new \Exception('Failed to send email');
         }
     }
